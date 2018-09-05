@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "al",
+            "request": "launch",
+            "name": "NAVDEVCU8",
+            "server": "http://localhost:7059/NAVDEV",
+            "serverInstance": "NAVDEV",
+            "authentication": "Windows",
+            "port": 7059
+                               }
+    ]
+}

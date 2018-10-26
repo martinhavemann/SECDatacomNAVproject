@@ -8,7 +8,9 @@
             "server": "http://localhost:7059/NAVDEV",
             "serverInstance": "NAVDEV",
             "authentication": "Windows",
-            "port": 7059
+            "port": 7059,
+            "schemaUpdateMode": "Synchronize"
+
                                }
     ]
 }

@@ -6,6 +6,17 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         {
             DataClassification = ToBeClassified;
             TableRelation = Bid."Bid No.";
+
+            trigger OnLookUp();
+            var
+                Item : Record Item;
+                Bid : Record Bid;
+            begin
+                if item.Get("No.") then begin
+                    Bid.SetRange("Vendor No.",item."Vendor No.");
+                    Page.RunModal(50000,Bid);
+                end    
+            end;
         }
         field(50001;"Bid Sales Price";Decimal)
         {

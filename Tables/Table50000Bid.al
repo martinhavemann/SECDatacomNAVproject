@@ -1,6 +1,10 @@
 table 50000 "Bid"
 {
     DataClassification = ToBeClassified;
+    LookupPageId = "Bid List";
+    DrillDownPageId = "Bid List";
+    DataCaptionFields = ;
+
     
     fields
     {
@@ -13,7 +17,6 @@ table 50000 "Bid"
         {
             DataClassification = ToBeClassified;
             TableRelation  = Vendor."No.";
-            
         }
         field(3;"Vendor Bid No."; text [100])
         {
@@ -27,6 +30,10 @@ table 50000 "Bid"
         {
             DataClassification = ToBeClassified;
         }
+        field(6;Description;Text[50])
+        {
+            DataClassification = ToBeClassified;
+        }
     }
 
     keys
@@ -37,6 +44,13 @@ table 50000 "Bid"
         }
     }
     
+    fieldgroups
+{
+    fieldgroup(DropDown;"Bid No.","Vendor no.","Vendor Bid No.","Expiry Date")
+    {
+
+    }
+}
     var
         myInt : Integer;
 

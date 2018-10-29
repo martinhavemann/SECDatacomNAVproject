@@ -2,6 +2,7 @@ page 50000 "Bid List"
 {
     PageType = List;
     SourceTable = Bid;
+    DataCaptionFields = "Bid No.","Vendor no.","Vendor Bid No.","Expiry Date";
 
     layout
     {
@@ -18,6 +19,10 @@ page 50000 "Bid List"
                     ApplicationArea = All;
                 }
                 field("Vendor Bid No.";"Vendor Bid No.")
+                {
+                    ApplicationArea = All;
+                }
+                field(Description;Description)
                 {
                     ApplicationArea = All;
                 }

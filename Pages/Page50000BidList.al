@@ -9,6 +9,10 @@ page 50000 "Bid List"
         {
             repeater(Group)
             {
+                field("Bid No.";"Bid No.")
+                {
+                    ApplicationArea = All;
+                }
                 field("Vendor No.";"Vendor No.")
                 {
                     ApplicationArea = All;

@@ -13,7 +13,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                 Bid : Record Bid;
             begin
                 if item.Get("No.") then begin
-                    Bid.SetRange("Vendor No.",item."Vendor No.");
+                    Bid.SetRange("Vendor No.",item."Vendor No."); // here we need to look at the price lists as well not just the item
                     Page.RunModal(50000,Bid);
                 end    
             end;
@@ -73,11 +73,15 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         {
             DataClassification = ToBeClassified;
         }
-        field(50023;"Profit Margin";decimal)
+        field(500023;"Profit Amount";Decimal)
         {
             DataClassification = ToBeClassified;
         }
-        field(50024;"Purchase Price on Purchase Order";Decimal)
+        field(50024;"Profit Margin";decimal)
+        {
+            DataClassification = ToBeClassified;
+        }
+        field(50025;"Purchase Price on Purchase Order";Decimal)
         {
             DataClassification = ToBeClassified;
         }

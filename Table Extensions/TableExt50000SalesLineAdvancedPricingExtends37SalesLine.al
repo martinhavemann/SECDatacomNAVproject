@@ -33,15 +33,28 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         field(50011;"Bid Purchase Price";Decimal)
         {
             DataClassification = ToBeClassified;
+
+            trigger Onvalidate()
+            begin
+                if "Bid Purchase Price" <> xRec."Bid Purchase Price" then 
+                    CalcAdvancedPrices;    
+            end;
         }
         field(50012;"Bid Purchase Discount";Decimal)
         {
             DataClassification = ToBeClassified;
+
+            trigger Onvalidate()
+            begin
+                if "Bid Purchase Discount" <> xRec."Bid Purchase Discount" then 
+                    CalcAdvancedPrices;    
+            end;
+
         }
         field(50013;"Transfer Price Markup";Decimal)
         {
             DataClassification = ToBeClassified;
-            Editable = false;
+            //Editable = false;
         }
         field(50014;"KickBack Percentage";Decimal)
         {
@@ -90,4 +103,15 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
     
     var
         myInt : Integer;
+        
+    local procedure CalcAdvancedPrices();
+    var
+        myInt : Integer;
+    begin
+        If "Bid Purchase Price" <> 0 then
+            if "Transfer Price Markup" <> 0 then
+                "Calculated Purchase Price" := "Bid Purchase Price" + (1+("Transfer Price Markup"/100))
+            else
+                "Calculated Purchase Price" := "Bid Purchase Price";
+    end;
 }

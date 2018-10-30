@@ -29,6 +29,11 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         field(50010;"Purchase Price"; Decimal)
         {
             DataClassification = ToBeClassified;
+                        trigger Onvalidate()
+            begin
+                if "Purchase Price" <> xRec."Purchase Price" then 
+                    CalcAdvancedPrices;    
+            end;
         }
         field(50011;"Bid Purchase Price";Decimal)
         {
@@ -55,16 +60,21 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         {
             DataClassification = ToBeClassified;
             //Editable = false;
+            trigger Onvalidate()
+            begin
+                if "Transfer Price Markup" <> xRec."Transfer Price Markup" then 
+                    CalcAdvancedPrices;    
+            end;
         }
         field(50014;"KickBack Percentage";Decimal)
         {
             DataClassification = ToBeClassified;
-            Editable = false;
+            //Editable = false;
         }
         field(50015;"Kickback Amount";Decimal)
         {
             DataClassification = ToBeClassified;
-            Editable = false;
+            //Editable = false;
         }
         field(50020;"Calculated Purchase Price";Decimal)
         {
@@ -110,21 +120,31 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
     begin
         if ("Bid Purchase Price" = 0) and ("Transfer Price Markup" = 0) and ("Kickback Amount" = 0) then begin 
             "Calculated Purchase Price" := "Purchase Price";
+            "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
+            "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
             exit;
         end;
 
         if "KickBack Percentage" <> 0 then
             If "Bid Purchase Price" <> 0 then
-                "Kickback Amount" := "Bid Purchase Price" * (1+("KickBack Percentage"/100))
+                "Kickback Amount" := "Bid Purchase Price" * ("KickBack Percentage"/100)
             else
-                "Kickback Amount" := "Purchase Price" * (1+("kickback percentage"/100));
+                "Kickback Amount" := "Purchase Price" * ("kickback percentage"/100);
              
         if "Transfer Price Markup" <> 0  then
             If "Bid Purchase Price" <> 0 then
-                TransferPriceAmount := "Bid Purchase Price" * (1+("Transfer Price Markup"/100))
+                TransferPriceAmount := "Bid Purchase Price" * ("Transfer Price Markup"/100)
             else
-                TransferPriceAmount := "Purchase Price" * (1+("Transfer Price Markup"/100));
-        
+                TransferPriceAmount := "Purchase Price" * ("Transfer Price Markup"/100);
+
+        If "Bid Purchase Price" <> 0 then
+            "Calculated Purchase Price" := "Bid Purchase Price" + TransferPriceAmount + "Kickback Amount"
+        else
+            "Calculated Purchase Price" := "Purchase Price" + TransferPriceAmount + "Kickback Amount";
+
+        "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
+        "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
+
            
             
     end;

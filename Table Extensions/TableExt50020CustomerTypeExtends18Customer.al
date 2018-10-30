@@ -6,6 +6,7 @@ tableextension 50020 CustomerType extends 18
         {
             DataClassification = ToBeClassified;
             OptionMembers = "End Customer","Reseller","Manufacturer","Financing Partner";
+            InitValue = "Reseller";
         }
         
 

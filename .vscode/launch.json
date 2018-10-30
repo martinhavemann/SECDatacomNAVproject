@@ -9,7 +9,7 @@
             "serverInstance": "NAVDEV",
             "authentication": "Windows",
             "port": 7059,
-            "schemaUpdateMode": "Synchronize"
+            "schemaUpdateMode": "Recreate"
 
                                }
     ]

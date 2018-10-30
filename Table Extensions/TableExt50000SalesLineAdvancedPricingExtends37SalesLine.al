@@ -106,12 +106,26 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         
     local procedure CalcAdvancedPrices();
     var
-        myInt : Integer;
+        TransferPriceAmount : Decimal;
     begin
-        If "Bid Purchase Price" <> 0 then
-            if "Transfer Price Markup" <> 0 then
-                "Calculated Purchase Price" := "Bid Purchase Price" + (1+("Transfer Price Markup"/100))
+        if ("Bid Purchase Price" = 0) and ("Transfer Price Markup" = 0) and ("Kickback Amount" = 0) then begin 
+            "Calculated Purchase Price" := "Purchase Price";
+            exit;
+        end;
+
+        if "KickBack Percentage" <> 0 then
+            If "Bid Purchase Price" <> 0 then
+                "Kickback Amount" := "Bid Purchase Price" * (1+("KickBack Percentage"/100))
             else
-                "Calculated Purchase Price" := "Bid Purchase Price";
+                "Kickback Amount" := "Purchase Price" * (1+("kickback percentage"/100));
+             
+        if "Transfer Price Markup" <> 0  then
+            If "Bid Purchase Price" <> 0 then
+                TransferPriceAmount := "Bid Purchase Price" * (1+("Transfer Price Markup"/100))
+            else
+                TransferPriceAmount := "Purchase Price" * (1+("Transfer Price Markup"/100));
+        
+           
+            
     end;
 }

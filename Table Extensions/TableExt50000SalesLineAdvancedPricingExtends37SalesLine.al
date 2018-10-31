@@ -27,15 +27,15 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                  //Insert some fancy code here that updates the bid price ann cost fields
             end;
         }
-        field(50001;"Bid Sales Price";Decimal)
+        field(50001;"Bid Unit Sales Price";Decimal)
         {
             DataClassification = ToBeClassified;
             
             trigger onvalidate();
 
             begin
-                if "Bid Sales Price" <> 0 then
-                    validate("Unit Price","Bid Sales Price")
+                if "Bid Unit Sales Price" <> 0 then
+                    validate("Unit Price","Bid unit Sales Price")
                 else
                     Validate(Quantity); //code here that finds the original sales price without bid
             end;
@@ -44,24 +44,24 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         {
             DataClassification = ToBeClassified;
         }
-        field(50010;"Purchase Price"; Decimal)
+        field(50010;"Unit Purchase Price"; Decimal)
         {
             DataClassification = ToBeClassified;
                         trigger Onvalidate()
             begin
-                if "Purchase Price" <> xRec."Purchase Price" then 
+                if "Unit Purchase Price" <> xRec."Unit Purchase Price" then 
                     CalcAdvancedPrices;    
             end;
         }
-        field(50011;"Bid Purchase Price";Decimal)
+        field(50011;"Bid Unit Purchase Price";Decimal)
         {
             DataClassification = ToBeClassified;
 
             trigger Onvalidate()
             begin
-                if "Bid Purchase Price" <> xRec."Bid Purchase Price" then 
+                if "Bid Unit Purchase Price" <> xRec."Bid Unit Purchase Price" then 
                     CalcAdvancedPrices;
-                if "Bid Purchase Price" <> 0 then 
+                if "Bid Unit Purchase Price" <> 0 then 
                     Claimable := true;
             end;
         }
@@ -140,46 +140,46 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
 
     }
     
-    var
-        myInt : Integer;
         
-    local procedure CalcAdvancedPrices();
+    procedure CalcAdvancedPrices();
     var
         TransferPriceAmount : Decimal;
     begin
-        if ("Bid Purchase Price" = 0) and ("Transfer Price Markup" = 0) and ("Kickback Amount" = 0) then begin 
-            "Calculated Purchase Price" := "Purchase Price";
-            "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
-            "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
-            "Purchase Price on Purchase Order" := "Purchase Price";
+        if ("Bid Unit Purchase Price" = 0) and ("Transfer Price Markup" = 0) and ("Kickback Amount" = 0) then begin 
+            "Calculated Purchase Price" := "Unit Purchase Price" * Quantity;
+            "Profit Amount" := "Line Amount" - "Calculated Purchase Price";
+            "Profit Margin" := ("Profit Amount" / "Line Amount") * 100;
+            "Purchase Price on Purchase Order" := "unit Purchase Price";
+            Claimable := false;
+            "Claim Amount" := 0;
             exit;
         end;
 
         if "KickBack Percentage" <> 0 then
-            If "Bid Purchase Price" <> 0 then
-                "Kickback Amount" := "Bid Purchase Price" * ("KickBack Percentage"/100)
+            If "Bid Unit Purchase Price" <> 0 then
+                "Kickback Amount" := ("Bid Unit Purchase Price" * Quantity) * ("KickBack Percentage"/100)
             else
-                "Kickback Amount" := "Purchase Price" * ("kickback percentage"/100);
+                "Kickback Amount" := ("Unit Purchase Price" * Quantity) * ("kickback percentage"/100);
              
         if "Transfer Price Markup" <> 0  then
-            If "Bid Purchase Price" <> 0 then
-                TransferPriceAmount := "Bid Purchase Price" * ("Transfer Price Markup"/100)
+            If "Bid Unit Purchase Price" <> 0 then
+                TransferPriceAmount := ("Bid Unit Purchase Price" * Quantity) * ("Transfer Price Markup"/100)
             else
-                TransferPriceAmount := "Purchase Price" * ("Transfer Price Markup"/100);
+                TransferPriceAmount := ("Unit Purchase Price" * Quantity) * ("Transfer Price Markup"/100);
 
-        If "Bid Purchase Price" <> 0 then begin
-            "Calculated Purchase Price" := "Bid Purchase Price" + TransferPriceAmount;
-            "Purchase Price on Purchase Order" := "Bid Purchase Price";
+        If "Bid Unit Purchase Price" <> 0 then begin
+            "Calculated Purchase Price" := ("Bid Unit Purchase Price" * Quantity) + TransferPriceAmount;
+            "Purchase Price on Purchase Order" := "Bid Unit Purchase Price";
+             "Claim Amount" := ("Unit Purchase Price" * Quantity) - ("Bid Unit Purchase Price" * Quantity);
         end else begin 
-            "Calculated Purchase Price" := "Purchase Price" + TransferPriceAmount;
-            "Purchase Price on Purchase Order" := "Purchase Price";
+            "Calculated Purchase Price" := ("unit Purchase Price" * Quantity) + TransferPriceAmount;
+            "Purchase Price on Purchase Order" := "Unit Purchase Price";
+            "Claim Amount" := 0;
         end;    
 
-        "Profit Amount" := "Unit Price" - "Calculated Purchase Price" - "Kickback Amount";
-        "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
-        "Claim Amount" := "Purchase Price" - "Bid Purchase Price";
-
-           
+        "Profit Amount" := ("Unit Price" * Quantity) - "Calculated Purchase Price" - "Kickback Amount";
+        "Profit Margin" := ("Profit Amount" / ("Unit Price" * Quantity)) * 100;
             
     end;
+   
 }

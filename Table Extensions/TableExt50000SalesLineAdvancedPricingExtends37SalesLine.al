@@ -148,7 +148,8 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         if ("Bid Unit Purchase Price" = 0) and ("Transfer Price Markup" = 0) and ("Kickback Amount" = 0) then begin 
             "Calculated Purchase Price" := "Unit Purchase Price" * Quantity;
             "Profit Amount" := "Line Amount" - "Calculated Purchase Price";
-            "Profit Margin" := ("Profit Amount" / "Line Amount") * 100;
+            if "Line Amount" <> 0 then
+                "Profit Margin" := ("Profit Amount" / "Line Amount") * 100;
             "Purchase Price on Purchase Order" := "unit Purchase Price";
             Claimable := false;
             "Claim Amount" := 0;
@@ -178,7 +179,8 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         end;    
 
         "Profit Amount" := ("Unit Price" * Quantity) - "Calculated Purchase Price" - "Kickback Amount";
-        "Profit Margin" := ("Profit Amount" / ("Unit Price" * Quantity)) * 100;
+        if "Line Amount" <> 0 then
+            "Profit Margin" := ("Profit Amount" / "Line Amount") * 100;
             
     end;
    

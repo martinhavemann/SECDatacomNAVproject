@@ -35,9 +35,9 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
 
             begin
                 if "Bid Sales Price" <> 0 then
-                    "Unit Price" := "Bid Sales Price"    
+                    validate("Unit Price","Bid Sales Price")
                 else
-                    ; //code here that finds the original sales price without bid
+                    Validate(Quantity); //code here that finds the original sales price without bid
             end;
         }
         field(50002;"Bid Sales Discount";Decimal)
@@ -92,11 +92,18 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
         {
             DataClassification = ToBeClassified;
             //Editable = false;
+            trigger Onvalidate()
+            begin
+                If "KickBack Percentage" = 0 then
+                    "Kickback Amount" := 0;
+                if "KickBack Percentage" <> xRec."KickBack Percentage" then 
+                    CalcAdvancedPrices;    
+            end;
         }
         field(50015;"Kickback Amount";Decimal)
         {
             DataClassification = ToBeClassified;
-            //Editable = false;
+            Editable = false;
         }
         field(50020;"Calculated Purchase Price";Decimal)
         {
@@ -144,6 +151,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             "Calculated Purchase Price" := "Purchase Price";
             "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
             "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
+            "Purchase Price on Purchase Order" := "Purchase Price";
             exit;
         end;
 
@@ -159,12 +167,15 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             else
                 TransferPriceAmount := "Purchase Price" * ("Transfer Price Markup"/100);
 
-        If "Bid Purchase Price" <> 0 then
-            "Calculated Purchase Price" := "Bid Purchase Price" + TransferPriceAmount + "Kickback Amount"
-        else
-            "Calculated Purchase Price" := "Purchase Price" + TransferPriceAmount + "Kickback Amount";
+        If "Bid Purchase Price" <> 0 then begin
+            "Calculated Purchase Price" := "Bid Purchase Price" + TransferPriceAmount;
+            "Purchase Price on Purchase Order" := "Bid Purchase Price";
+        end else begin 
+            "Calculated Purchase Price" := "Purchase Price" + TransferPriceAmount;
+            "Purchase Price on Purchase Order" := "Purchase Price";
+        end;    
 
-        "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
+        "Profit Amount" := "Unit Price" - "Calculated Purchase Price" - "Kickback Amount";
         "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
         "Claim Amount" := "Purchase Price" - "Bid Purchase Price";
 

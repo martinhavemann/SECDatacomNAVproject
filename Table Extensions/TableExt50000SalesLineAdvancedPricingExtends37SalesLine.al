@@ -14,13 +14,31 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             begin
                 if item.Get("No.") then begin
                     Bid.SetRange("Vendor No.",item."Vendor No."); // here we need to look at the price lists as well not just the item
-                    Page.RunModal(50000,Bid);
+                    if Page.RunModal(50000,Bid) = "Action"::LookupOK then 
+                        validate("Bid No.",Bid."Bid No.");
                 end    
+            end;
+
+            trigger Onvalidate();
+            var
+                Bid : Record Bid;
+            begin
+                if Bid.Get("Bid No.") then;
+                 //Insert some fancy code here that updates the bid price ann cost fields
             end;
         }
         field(50001;"Bid Sales Price";Decimal)
         {
             DataClassification = ToBeClassified;
+            
+            trigger onvalidate();
+
+            begin
+                if "Bid Sales Price" <> 0 then
+                    "Unit Price" := "Bid Sales Price"    
+                else
+                    ; //code here that finds the original sales price without bid
+            end;
         }
         field(50002;"Bid Sales Discount";Decimal)
         {
@@ -42,7 +60,9 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             trigger Onvalidate()
             begin
                 if "Bid Purchase Price" <> xRec."Bid Purchase Price" then 
-                    CalcAdvancedPrices;    
+                    CalcAdvancedPrices;
+                if "Bid Purchase Price" <> 0 then 
+                    Claimable := true;
             end;
         }
         field(50012;"Bid Purchase Discount";Decimal)
@@ -53,6 +73,8 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             begin
                 if "Bid Purchase Discount" <> xRec."Bid Purchase Discount" then 
                     CalcAdvancedPrices;    
+                if "Bid Purchase Discount" <> 0 then 
+                    Claimable := true;                    
             end;
 
         }
@@ -144,6 +166,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
 
         "Profit Amount" := "Unit Price" - "Calculated Purchase Price";
         "Profit Margin" := ("Profit Amount" / "Unit Price") * 100;
+        "Claim Amount" := "Purchase Price" - "Bid Purchase Price";
 
            
             

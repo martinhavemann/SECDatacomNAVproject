@@ -30,7 +30,7 @@ pageextension 50001 "Advanced Purchase prices" extends "Purchase Prices"
             action(UpdatePrices)
             {
                 Caption = 'Update Prices';
-
+                Image = UpdateUnitCost;
                 trigger OnAction();
                 begin
                     Message('Under Construction')

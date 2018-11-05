@@ -178,7 +178,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             "Claim Amount" := 0;
         end;    
 
-        "Profit Amount" := ("Unit Price" * Quantity) - "Calculated Purchase Price" - "Kickback Amount";
+        "Profit Amount" := "Line Amount" - "Calculated Purchase Price" - "Kickback Amount";
         if "Line Amount" <> 0 then
             "Profit Margin" := ("Profit Amount" / "Line Amount") * 100;
             

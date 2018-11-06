@@ -26,6 +26,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             begin
                 if Bid.Get("Bid No.") then begin
                     BidPrices.SetRange("Bid No.","Bid No.");
+                    BidPrices.SetRange("item No.","No.");
                     if BidPrices.FindFirst then begin
                         if BidPrices."Bid Unit Sales Price" <> 0 then 
                             validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");

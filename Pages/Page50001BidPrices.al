@@ -2,14 +2,17 @@ page 50001 "Bid Prices"
 {
     PageType = List;
     SourceTable = "Bid Prices";
-    AutoSplitKey = true;
-
+    
     layout
     {
         area(content)
         {
             repeater(Group)
             {
+                field("item No.";"item No.")
+                {
+                    ApplicationArea = all;
+                }
                 field("Bid Unit Sales Price";"Bid Unit Sales Price")
                 {
                     ApplicationArea = all;

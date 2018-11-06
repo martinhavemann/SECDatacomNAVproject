@@ -9,9 +9,10 @@ table 50001 "Bid Prices"
             DataClassification = ToBeClassified;
             TableRelation = Bid."Bid No.";
         }
-        field(2;"Bid Line No.";Integer)
+        field(2;"item No.";code [20])
         {
             DataClassification = ToBeClassified;
+            TableRelation = Item."No.";
         }
         field(50001;"Bid Unit Sales Price";Decimal)
         {
@@ -33,7 +34,7 @@ table 50001 "Bid Prices"
 
     keys
     {
-        key(PK;"Bid No.","Bid Line No.")
+        key(PK;"Bid No.","item No.")
         {
             Clustered = true;
         }

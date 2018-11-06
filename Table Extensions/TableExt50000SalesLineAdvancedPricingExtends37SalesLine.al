@@ -22,9 +22,18 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             trigger Onvalidate();
             var
                 Bid : Record Bid;
+                BidPrices : Record "Bid Prices";
             begin
-                if Bid.Get("Bid No.") then;
-                 //Insert some fancy code here that updates the bid price ann cost fields
+                if Bid.Get("Bid No.") then begin
+                    BidPrices.SetRange("Bid No.","Bid No.");
+                    if BidPrices.FindFirst then begin
+                        if BidPrices."Bid Unit Sales Price" <> 0 then 
+                            validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");
+                        If BidPrices."Bid Unit Purchase Price" <> 0 then
+                            Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
+                    end;
+                end;
+                 
             end;
         }
         field(50001;"Bid Unit Sales Price";Decimal)

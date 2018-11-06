@@ -46,10 +46,14 @@ page 50000 "Bid List"
     {
         area(processing)
         {
-            action(ActionName)
+            action("Show Prices")
             {
                 trigger OnAction();
+                var 
+                    BidPrices : Record "Bid Prices";
                 begin
+                    BidPrices.SetRange("Bid No.","Bid No.");
+                    page.RunModal(50001,BidPrices);
                 end;
             }
         }

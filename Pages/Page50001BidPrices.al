@@ -13,6 +13,10 @@ page 50001 "Bid Prices"
                 {
                     ApplicationArea = all;
                 }
+                field("Customer No.";"Customer No.")
+                {
+                    ApplicationArea = alL;
+                }
                 field("Bid Unit Sales Price";"Bid Unit Sales Price")
                 {
                     ApplicationArea = all;

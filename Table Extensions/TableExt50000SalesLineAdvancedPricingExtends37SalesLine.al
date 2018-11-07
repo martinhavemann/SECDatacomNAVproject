@@ -11,11 +11,22 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
             var
                 Item : Record Item;
                 Bid : Record Bid;
+                TempBid : Record Bid temporary;
+                BidPrices : Record "Bid Prices";
             begin
                 if item.Get("No.") then begin
-                    Bid.SetRange("Vendor No.",item."Vendor No."); // here we need to look at the price lists as well not just the item
-                    if Page.RunModal(50000,Bid) = "Action"::LookupOK then 
-                        validate("Bid No.",Bid."Bid No.");
+                    BidPrices.SetRange("item No.","No.");
+                    BidPrices.setrange("Customer No.","Sell-to Customer No.");
+                    if not BidPrices.FindFirst then 
+                        BidPrices.SetRange("Customer No.");
+                    if BidPrices.FindSet then repeat
+                        if Bid.Get(BidPrices."Bid No.") then begin
+                            TempBid := Bid;
+                            if not TempBid.Insert then;
+                        end;
+                    Until BidPrices.Next = 0;    
+                    if Page.RunModal(50000,tempBid) = "Action"::LookupOK then 
+                        validate("Bid No.",tempBid."Bid No.");
                 end    
             end;
 

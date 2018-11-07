@@ -53,8 +53,10 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                                 Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
                         end 
                     end;
-                end;
-                 
+                end else begin
+                    Validate("Bid Unit Sales Price",0);
+                    Validate("Bid Unit Purchase Price",0)
+                end; 
             end;
         }
         field(50001;"Bid Unit Sales Price";Decimal)

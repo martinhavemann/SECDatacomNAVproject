@@ -34,6 +34,7 @@ table 50000 "Bid"
         {
             DataClassification = ToBeClassified;
         }
+        
     }
 
     keys

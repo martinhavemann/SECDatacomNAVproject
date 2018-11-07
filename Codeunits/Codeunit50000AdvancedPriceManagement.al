@@ -31,4 +31,20 @@ codeunit 50000 "Advanced Price Management"
             UpdateSalesLineWithPurchPrice(SalesLine);
         SalesLine.CalcAdvancedPrices;
     end;
+
+    [EventSubscriber(ObjectType::Codeunit, codeunit::"Release Sales Document", 'OnBeforeReleaseSalesDoc', '', true, true)]
+    local procedure SalesHeaderOnBeforeReleaseSalesDoc(var SalesHeader : Record "Sales Header"; PreviewMode : Boolean)
+    var 
+        SalesLine : Record "Sales Line";   
+    begin
+        SalesLine.SetRange("Document No.",SalesHeader."No.");
+        if SalesLine.FindSet then repeat
+            if SalesLine."Bid Unit Sales Price" <> 0 then
+                SalesLine.TestField("Bid No.");
+            if SalesLine."Bid Unit Purchase Price" <> 0 then
+                SalesLine.TestField("Bid No.");
+        until SalesLine.Next = 0;
+    end;
+
+
 }

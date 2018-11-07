@@ -18,15 +18,15 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                     BidPrices.SetRange("item No.","No.");
                     BidPrices.setrange("Customer No.","Sell-to Customer No.");
                     if not BidPrices.FindFirst then 
-                        BidPrices.SetRange("Customer No.");
+                       BidPrices.SetRange("Customer No.");
                     if BidPrices.FindSet then repeat
                         if Bid.Get(BidPrices."Bid No.") then begin
                             TempBid := Bid;
                             if not TempBid.Insert then;
                         end;
                     Until BidPrices.Next = 0;    
-                    if Page.RunModal(50000,tempBid) = "Action"::LookupOK then 
-                        validate("Bid No.",tempBid."Bid No.");
+                    if Page.RunModal(50000,TempBid) = "Action"::LookupOK then 
+                        validate("Bid No.",TempBid."Bid No.");
                 end    
             end;
 
@@ -38,11 +38,20 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                 if Bid.Get("Bid No.") then begin
                     BidPrices.SetRange("Bid No.","Bid No.");
                     BidPrices.SetRange("item No.","No.");
+                    BidPrices.SetRange("Customer No.","Sell-to Customer No.");
                     if BidPrices.FindFirst then begin
                         if BidPrices."Bid Unit Sales Price" <> 0 then 
                             validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");
                         If BidPrices."Bid Unit Purchase Price" <> 0 then
                             Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
+                    end else begin
+                        BidPrices.SetRange("Customer No.");
+                        if BidPrices.FindFirst then begin
+                            if BidPrices."Bid Unit Sales Price" <> 0 then 
+                                validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");
+                            If BidPrices."Bid Unit Purchase Price" <> 0 then
+                                Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
+                        end 
                     end;
                 end;
                  

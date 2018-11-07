@@ -15,7 +15,6 @@ codeunit 50000 "Advanced Price Management"
         PurchPrice.SetRange("Vendor No.",Item."Vendor No.");
         PurchPrice.SetRange("Variant Code",SalesLine."Variant Code");
         PurchPrice.SetFilter("Ending Date",'..%1',WorkDate);
-
         if PurchPrice.FindLast then
             SalesLine.validate("Unit Purchase Price",PurchPrice."Direct Unit Cost")
         else

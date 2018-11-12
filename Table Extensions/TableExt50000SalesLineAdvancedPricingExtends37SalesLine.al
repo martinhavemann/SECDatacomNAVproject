@@ -44,6 +44,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                             validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");
                         If BidPrices."Bid Unit Purchase Price" <> 0 then
                             Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
+                        Claimable := BidPrices.Claimable;    
                     end else begin
                         BidPrices.SetRange("Customer No.");
                         if BidPrices.FindFirst then begin
@@ -51,6 +52,7 @@ tableextension 50000 "Sales Line Bid" extends "Sales Line"
                                 validate("Bid Unit Sales Price",BidPrices."Bid Unit Sales Price");
                             If BidPrices."Bid Unit Purchase Price" <> 0 then
                                 Validate("Bid Unit Purchase Price",BidPrices."Bid Unit Purchase Price");
+                            Claimable := BidPrices.Claimable;    
                         end 
                     end;
                 end else begin

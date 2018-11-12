@@ -37,6 +37,10 @@ table 50001 "Bid Prices"
         {
             DataClassification = ToBeClassified;
         }
+        field(50021;"Claimable";Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
     }
 
     keys
@@ -48,10 +52,12 @@ table 50001 "Bid Prices"
     }
     
     var
-        myInt : Integer;
+        Bid : Record Bid;
 
     trigger OnInsert();
     begin
+        If Bid.Get("Bid No.") then
+            Claimable := Bid.Claimable;
     end;
 
     trigger OnModify();

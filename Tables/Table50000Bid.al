@@ -34,6 +34,11 @@ table 50000 "Bid"
         {
             DataClassification = ToBeClassified;
         }
+        field(7;Claimable;Boolean)
+        {
+            DataClassification = ToBeClassified;
+        }
+        
     }
 
     keys
@@ -52,7 +57,7 @@ table 50000 "Bid"
     }
 }
     var
-        myInt : Integer;
+        BidPrices : Record "Bid Prices";
 
     trigger OnInsert();
     begin
@@ -64,6 +69,9 @@ table 50000 "Bid"
 
     trigger OnDelete();
     begin
+        BidPrices.SetRange("Bid No.","Bid No.");
+        if BidPrices.Count > 0 then
+            Error('You cannot delete the bid as there is prices assoicated with it.')
     end;
 
     trigger OnRename();

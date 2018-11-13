@@ -85,5 +85,4 @@ codeunit 50000 "Advanced Price Management"
         until SalesLine.Next = 0;
     end;
 
-//OnAfterAssignItemValues(Rec,Item);
 }

@@ -1,6 +1,15 @@
-pageextension 50003 "Customer Card Advacned Pricing" extends "Customer Card"
+pageextension 50003 "Customer Card Advanced Pricing" extends "Customer Card"
 {
-   
+    layout
+    {
+        addafter("IC Partner Code")
+        {        
+            field("Customer Type";"Customer Type")
+            {
+                ApplicationArea = all;
+            }
+        }
+    }   
     actions
     {
         
@@ -18,7 +27,9 @@ pageextension 50003 "Customer Card Advacned Pricing" extends "Customer Card"
                 end;
             }
         }
+        
     }
+
     
     
 }

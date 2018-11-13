@@ -1,4 +1,4 @@
-tableextension 50022 "End Customer and Reseller 2" extends 36
+tableextension 50022 "End Customer and Reseller 2" extends 112
 {
     fields
     {

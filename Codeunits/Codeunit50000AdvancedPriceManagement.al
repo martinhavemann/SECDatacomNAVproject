@@ -15,25 +15,68 @@ codeunit 50000 "Advanced Price Management"
     var
         SalesDiscountGroup : Record "Sales Line Discount";
         SalesPriceWorksheet : Record "Sales Price Worksheet";
-        salesPriceGroup : Record "Sales Price";
+        ItemListPrice : Record "Sales Price";
+        ItemsExistInGroup : Boolean;
+        ItemTemp : Record Item temporary;
     begin
         SalesDiscountGroup.CopyFilters(DiscontGroupFilters);
         if SalesDiscountGroup.FindSet then repeat
-            salesPriceGroup.SetRange("Sales Code",SalesDiscountGroup."Sales Code");
-            salesPriceGroup.SetRange("Sales Type",SalesDiscountGroup."Sales type");
-            salesPriceGroup.SetRange("Currency Code",SalesDiscountGroup."Currency Code");
-            salesPriceGroup.SetRange("starting date",SalesDiscountGroup."Starting Date");
-            salesPriceGroup.SetRange("variant Code",SalesDiscountGroup."Variant Code");
-            salesPriceGroup.SetRange("Unit of Measure Code",SalesDiscountGroup."Unit of Measure Code");
-            salesPriceGroup.SetRange("Minimum Quantity",SalesDiscountGroup."Minimum Quantity");
-            if salesPriceGroup.FindSet then repeat
-                SalesPriceWorksheet.TransferFields(salesPriceGroup);
-                SalesPriceWorksheet."New Unit Price" := salesPriceGroup."Unit Price" * ((100 - SalesDiscountGroup."Line Discount %")/100);
-                SalesPriceWorksheet.Insert(true);
-            until salesPriceGroup.next = 0;
+            ItemsExistInGroup := FindItemsInItemDiscGroup(ItemTemp,SalesDiscountGroup);
+            if ItemsExistInGroup then begin
+                ItemTemp.FindFirst;
+                repeat
+                    if FindListPriceForitem(ItemTemp."No.",ItemListPrice) then begin
+                        SalesPriceWorksheet.validate("Item No.",ItemTemp."No.");
+                        SalesPriceWorksheet.Validate("Currency Code",ItemListPrice."Currency Code");
+                        CreateWorksheetLineFromDiscountGroup(SalesDiscountGroup,SalesPriceWorksheet);
+                        if SalesPriceWorksheet."Unit of Measure Code" = '' then
+                            SalesPriceWorksheet."Unit of Measure Code" := ItemTemp."Sales Unit of Measure";
+                        SalesPriceWorksheet."New Unit Price" := ItemListPrice."Unit Price" *((100-SalesDiscountGroup."Line Discount %")/100);
+                        SalesPriceWorksheet.Insert(true);
+                    end;
+                until ItemTemp.next = 0;
+            end;
         until SalesDiscountGroup.next = 0;
     end;
 
+    local procedure FindListPriceForitem(ItemNo : code[20]; var ListPrice : record "sales price") : Boolean;
+    var
+        Test : Integer;
+    begin
+        ListPrice.SetRange("Item No.",ItemNo);
+        ListPrice.SetRange("Sales Type",ListPrice."Sales Type"::"All Customers");
+        exit(listprice.FindLast);
+    end;
+
+    local procedure FindItemsInItemDiscGroup(var ItemTemp : Record Item temporary; SalesDiscGroup : Record "Sales Line Discount") : Boolean;
+    var
+        Item : Record Item;
+    begin
+        Item.SetRange("Item Disc. Group",SalesDiscGroup.Code);
+        if Item.FindSet then begin
+            repeat
+                ItemTemp := Item;
+                if not ItemTemp.Insert then;                
+            until Item.next = 0;
+            exit(true);
+        end else begin
+            clear(ItemTemp);
+            exit(false);
+        end;
+
+    end;
+
+    local procedure CreateWorksheetLineFromDiscountGroup(DiscountGroup : Record "Sales Line Discount"; var WorkSheet : Record "Sales Price Worksheet");
+    begin
+        WorkSheet.Validate("Sales Type",DiscountGroup."Sales Type");
+        WorkSheet.Validate("Sales Code",DiscountGroup."Sales Code");
+        WorkSheet.Validate("Starting Date",DiscountGroup."Starting Date");
+        WorkSheet.Validate("Minimum Quantity",DiscountGroup."Minimum Quantity");
+        if DiscountGroup."Ending Date" <> 0D then
+            WorkSheet.Validate("Ending Date",DiscountGroup."Ending Date");
+        WorkSheet.Validate("Unit of Measure Code",DiscountGroup."Unit of Measure Code");
+        WorkSheet.Validate("Variant Code",DiscountGroup."Variant Code");
+    end;
     local procedure UpdateSalesLineWithPurchPrice(var SalesLine : Record "Sales Line");
     var
         Item : Record Item;

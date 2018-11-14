@@ -2,6 +2,38 @@ codeunit 50000 "Advanced Price Management"
 {
     EventSubscriberInstance = StaticAutomatic;
 
+    trigger OnRun();
+    var
+        DiscontGroupFilters : Record "Sales Line Discount";
+    begin
+        DiscontGroupFilters.SetRange(Type,DiscontGroupFilters.type::"Item Disc. Group");
+        DiscontGroupFilters.SetRange(Code,'TESTVARER');
+        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters);
+    end;
+
+    procedure CalcGroupPricesFromGroupDiscounts(var DiscontGroupFilters : Record "Sales Line Discount");
+    var
+        SalesDiscountGroup : Record "Sales Line Discount";
+        SalesPriceWorksheet : Record "Sales Price Worksheet";
+        salesPriceGroup : Record "Sales Price";
+    begin
+        SalesDiscountGroup.CopyFilters(DiscontGroupFilters);
+        if SalesDiscountGroup.FindSet then repeat
+            salesPriceGroup.SetRange("Sales Code",SalesDiscountGroup."Sales Code");
+            salesPriceGroup.SetRange("Sales Type",SalesDiscountGroup."Sales type");
+            salesPriceGroup.SetRange("Currency Code",SalesDiscountGroup."Currency Code");
+            salesPriceGroup.SetRange("starting date",SalesDiscountGroup."Starting Date");
+            salesPriceGroup.SetRange("variant Code",SalesDiscountGroup."Variant Code");
+            salesPriceGroup.SetRange("Unit of Measure Code",SalesDiscountGroup."Unit of Measure Code");
+            salesPriceGroup.SetRange("Minimum Quantity",SalesDiscountGroup."Minimum Quantity");
+            if salesPriceGroup.FindSet then repeat
+                SalesPriceWorksheet.TransferFields(salesPriceGroup);
+                SalesPriceWorksheet."New Unit Price" := salesPriceGroup."Unit Price" * ((100 - SalesDiscountGroup."Line Discount %")/100);
+                SalesPriceWorksheet.Insert(true);
+            until salesPriceGroup.next = 0;
+        until SalesDiscountGroup.next = 0;
+    end;
+
     local procedure UpdateSalesLineWithPurchPrice(var SalesLine : Record "Sales Line");
     var
         Item : Record Item;

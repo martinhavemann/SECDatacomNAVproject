@@ -79,7 +79,7 @@ codeunit 50000 "Advanced Price Management"
         WorkSheet.Validate("Unit of Measure Code",DiscountGroup."Unit of Measure Code");
         WorkSheet.Validate("Variant Code",DiscountGroup."Variant Code");
     end;
-    
+
     local procedure UpdateSalesLineWithPurchPrice(var SalesLine : Record "Sales Line");
     var
         Item : Record Item;
@@ -177,7 +177,7 @@ codeunit 50000 "Advanced Price Management"
         CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
         SalesPriceWorksheet.SetRange("Sales Type",rec."Sales Type");
         SalesPriceWorksheet.SetRange("Sales Code",Rec."Sales Code");
-        //ImplementPrices.InitializeRequest(true);           this have to wait until the function becomes External
+        //ImplementPrices.InitializeRequest(true);          // this have to wait until the function becomes External
         //ImplementPrices.SetTableView(SalesPriceWorksheet);
         //ImplementPrices.Run();
         Report.run(report::"Implement Price Change",false,true,SalesPriceWorksheet);

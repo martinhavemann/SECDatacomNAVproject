@@ -5,16 +5,17 @@ codeunit 50000 "Advanced Price Management"
     trigger OnRun();
     var
         DiscontGroupFilters : Record "Sales Line Discount";
+        SalesPriceWorksheet : Record "Sales Price Worksheet";
     begin
         DiscontGroupFilters.SetRange(Type,DiscontGroupFilters.type::"Item Disc. Group");
         DiscontGroupFilters.SetRange(Code,'TESTVARER');
-        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters);
+        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
     end;
 
-    procedure CalcGroupPricesFromGroupDiscounts(var DiscontGroupFilters : Record "Sales Line Discount");
+    procedure CalcGroupPricesFromGroupDiscounts(var DiscontGroupFilters : Record "Sales Line Discount"; SalesPriceWorksheet : Record "Sales Price Worksheet");
     var
         SalesDiscountGroup : Record "Sales Line Discount";
-        SalesPriceWorksheet : Record "Sales Price Worksheet";
+        //SalesPriceWorksheet : Record "Sales Price Worksheet";
         ItemListPrice : Record "Sales Price";
         ItemsExistInGroup : Boolean;
         ItemTemp : Record Item temporary;
@@ -32,7 +33,8 @@ codeunit 50000 "Advanced Price Management"
                         if SalesPriceWorksheet."Unit of Measure Code" = '' then
                             SalesPriceWorksheet."Unit of Measure Code" := ItemTemp."Sales Unit of Measure";
                         SalesPriceWorksheet."New Unit Price" := ItemListPrice."Unit Price" *((100-SalesDiscountGroup."Line Discount %")/100);
-                        SalesPriceWorksheet.Insert(true);
+                        if not SalesPriceWorksheet.Insert(true) then
+                            SalesPriceWorksheet.Modify(true);
                     end;
                 until ItemTemp.next = 0;
             end;
@@ -77,6 +79,7 @@ codeunit 50000 "Advanced Price Management"
         WorkSheet.Validate("Unit of Measure Code",DiscountGroup."Unit of Measure Code");
         WorkSheet.Validate("Variant Code",DiscountGroup."Variant Code");
     end;
+    
     local procedure UpdateSalesLineWithPurchPrice(var SalesLine : Record "Sales Line");
     var
         Item : Record Item;
@@ -158,6 +161,26 @@ codeunit 50000 "Advanced Price Management"
             if SalesLine."Bid Unit Purchase Price" <> 0 then
                 SalesLine.TestField("Bid No.");
         until SalesLine.Next = 0;
+    end;
+
+    [EventSubscriber(ObjectType::Table, database::"Sales Line Discount", 'OnAfterModifyEvent','', true, true)]
+    local procedure SalesLineDiscountOnAfterModify(var Rec : Record "Sales Line Discount")
+    var
+        DiscontGroupFilters : Record "Sales Line Discount";
+        SalesPriceWorksheet : Record "Sales Price Worksheet";
+        ImplementPrices     : Report "Implement Price Change";
+    begin
+        DiscontGroupFilters.SetRange(Type,DiscontGroupFilters.type::"Item Disc. Group");
+        DiscontGroupFilters.SetRange(Code,Rec.Code);
+        DiscontGroupFilters.SetRange("Sales Type",rec."Sales Type");
+        DiscontGroupFilters.SetRange("Sales Code",Rec."Sales Code");
+        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
+        SalesPriceWorksheet.SetRange("Sales Type",rec."Sales Type");
+        SalesPriceWorksheet.SetRange("Sales Code",Rec."Sales Code");
+        //ImplementPrices.InitializeRequest(true);           this have to wait until the function becomes External
+        //ImplementPrices.SetTableView(SalesPriceWorksheet);
+        //ImplementPrices.Run();
+        Report.run(report::"Implement Price Change",false,true,SalesPriceWorksheet);
     end;
 
 }

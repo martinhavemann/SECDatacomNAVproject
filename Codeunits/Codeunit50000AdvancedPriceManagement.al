@@ -12,6 +12,56 @@ codeunit 50000 "Advanced Price Management"
         CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
     end;
 
+    procedure CreateListprices(SalesPriceWorksheet : Record "Sales Price Worksheet");
+    var
+        DiscontGroupFilters : Record "Sales Line Discount";
+        SalesPrice : Record "Sales Price";
+        //SalesPriceWorksheet : Record "Sales Price Worksheet";
+        ImplementPrices     : Report "Implement Price Change";
+        Suggestprices       : report "Suggest Sales Price on Wksh.";
+        CurrencyTemp        : Record Currency temporary;
+
+    begin
+        SalesPriceWorksheet.SetRecFilter;
+        ImplementPrices.SetTableView(SalesPriceWorksheet);
+        ImplementPrices.InitializeRequest(true);
+        ImplementPrices.UseRequestPage(false);
+        ImplementPrices.Run();
+        if not FindListPriceForitem(SalesPriceWorksheet."Item No.",SalesPriceWorksheet."Currency Code",SalesPrice) then
+            exit;
+        SalesPrice.SetRecFilter;
+        if SalesPriceWorksheet."Currency Code" <> '' then begin    
+            Suggestprices.InitializeRequest(SalesPrice."Sales Type"::"All Customers",'',SalesPriceWorksheet."Starting Date",SalesPriceWorksheet."Ending Date",
+                                            '','',true);
+            Suggestprices.SetTableView(SalesPrice);
+            Suggestprices.UseRequestPage(false);
+            Suggestprices.Run;
+            Clear(ImplementPrices);
+            SalesPriceWorksheet.SetRange("Currency Code",'');
+            ImplementPrices.SetTableView(SalesPriceWorksheet);
+            ImplementPrices.InitializeRequest(true);
+            ImplementPrices.UseRequestPage(false);
+            ImplementPrices.Run();
+        end;     
+        if not FindListPriceForitem(SalesPriceWorksheet."Item No.",'',SalesPrice) then
+            exit;                             
+        FindPriceCurrencies(SalesPriceWorksheet."Currency Code",CurrencyTemp);
+        if CurrencyTemp.FindFirst then repeat
+            Clear(Suggestprices);
+            Suggestprices.InitializeRequest(SalesPrice."Sales Type"::"All Customers",'',SalesPriceWorksheet."Starting Date",SalesPriceWorksheet."Ending Date",
+                                            CurrencyTemp.Code,'',true);
+            Suggestprices.SetTableView(SalesPrice);
+            Suggestprices.UseRequestPage(false);
+            Suggestprices.Run;
+        until CurrencyTemp.next = 0; 
+        SalesPriceWorksheet.SetRange("Currency Code");
+        Clear(ImplementPrices);
+        ImplementPrices.SetTableView(SalesPriceWorksheet);
+        ImplementPrices.InitializeRequest(true);
+        ImplementPrices.UseRequestPage(false);
+        ImplementPrices.Run();                                           
+    end;
+
     procedure CalcGroupPricesFromGroupDiscounts(var DiscontGroupFilters : Record "Sales Line Discount"; SalesPriceWorksheet : Record "Sales Price Worksheet");
     var
         SalesDiscountGroup : Record "Sales Line Discount";
@@ -26,7 +76,7 @@ codeunit 50000 "Advanced Price Management"
             if ItemsExistInGroup then begin
                 ItemTemp.FindFirst;
                 repeat
-                    if FindListPriceForitem(ItemTemp."No.",ItemListPrice) then begin
+                    if FindListPriceForitem(ItemTemp."No.",'',ItemListPrice) then begin
                         SalesPriceWorksheet.validate("Item No.",ItemTemp."No.");
                         SalesPriceWorksheet.Validate("Currency Code",ItemListPrice."Currency Code");
                         CreateWorksheetLineFromDiscountGroup(SalesDiscountGroup,SalesPriceWorksheet);
@@ -41,12 +91,13 @@ codeunit 50000 "Advanced Price Management"
         until SalesDiscountGroup.next = 0;
     end;
 
-    local procedure FindListPriceForitem(ItemNo : code[20]; var ListPrice : record "sales price") : Boolean;
+    local procedure FindListPriceForitem(ItemNo : code[20]; CurrencyCode: Code[20]; var ListPrice : record "sales price") : Boolean;
     var
         Test : Integer;
     begin
         ListPrice.SetRange("Item No.",ItemNo);
         ListPrice.SetRange("Sales Type",ListPrice."Sales Type"::"All Customers");
+        ListPrice.SetRange("Currency Code",CurrencyCode);
         exit(listprice.FindLast);
     end;
 
@@ -120,6 +171,18 @@ codeunit 50000 "Advanced Price Management"
             exit(false);
     end;
 
+    local procedure FindPriceCurrencies(ExceptThisOne : code[20]; var CurrencyTemp : Record Currency temporary);
+    var
+        Currency : Record Currency;
+    begin
+        Currency.SetRange("Make Prices",true);
+        if Currency.FindSet then repeat
+            if Currency.Code <> ExceptThisOne then begin
+                CurrencyTemp := Currency;
+                if not CurrencyTemp.Insert then;
+            end;
+        until Currency.next = 0;
+    end;
 
     [EventSubscriber(ObjectType::Table, database::"Sales Line", 'OnAfterUpdateAmounts', '', true, true)]
     local procedure SalesLineOnAfterUpdateAmounts(var SalesLine : Record "Sales Line")
@@ -177,10 +240,11 @@ codeunit 50000 "Advanced Price Management"
         CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
         SalesPriceWorksheet.SetRange("Sales Type",rec."Sales Type");
         SalesPriceWorksheet.SetRange("Sales Code",Rec."Sales Code");
-        //ImplementPrices.InitializeRequest(true);          // this have to wait until the function becomes External
-        //ImplementPrices.SetTableView(SalesPriceWorksheet);
-        //ImplementPrices.Run();
-        Report.run(report::"Implement Price Change",false,true,SalesPriceWorksheet);
+        ImplementPrices.InitializeRequest(true);          
+        ImplementPrices.SetTableView(SalesPriceWorksheet);
+        ImplementPrices.UseRequestPage(false);
+        ImplementPrices.Run();
+        //Report.run(report::"Implement Price Change",false,true,SalesPriceWorksheet);
     end;
 
 }

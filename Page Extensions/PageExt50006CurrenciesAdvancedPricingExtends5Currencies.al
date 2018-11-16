@@ -6,16 +6,10 @@ pageextension 50006 "Currencies Adv. Pricing" extends currencies
         {
             field("Make Prices";"Make Prices")
             {
-                ApplicationArea = ll;
+                ApplicationArea = all;
             }
         }
     }
 
-    actions
-    {
-        // Add changes to page actions here
-    }
-    
-    var
-        myInt : Integer;
+   
 }

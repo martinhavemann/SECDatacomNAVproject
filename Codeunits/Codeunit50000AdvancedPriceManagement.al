@@ -4,19 +4,15 @@ codeunit 50000 "Advanced Price Management"
 
     trigger OnRun();
     var
-        DiscontGroupFilters : Record "Sales Line Discount";
-        SalesPriceWorksheet : Record "Sales Price Worksheet";
+
     begin
-        DiscontGroupFilters.SetRange(Type,DiscontGroupFilters.type::"Item Disc. Group");
-        DiscontGroupFilters.SetRange(Code,'TESTVARER');
-        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
+
     end;
 
     procedure CreateListprices(SalesPriceWorksheet : Record "Sales Price Worksheet");
     var
         DiscontGroupFilters : Record "Sales Line Discount";
-        SalesPrice : Record "Sales Price";
-        //SalesPriceWorksheet : Record "Sales Price Worksheet";
+        SalesPrice          : Record "Sales Price";
         ImplementPrices     : Report "Implement Price Change";
         Suggestprices       : report "Suggest Sales Price on Wksh.";
         CurrencyTemp        : Record Currency temporary;
@@ -62,21 +58,47 @@ codeunit 50000 "Advanced Price Management"
         ImplementPrices.Run();                                           
     end;
 
+    procedure CalcPricesForItemDiscGroup(itemDiscGroup : Code[20]);
+    var
+        DiscontGroupFilters : Record "Sales Line Discount";
+        SalesPriceWorksheet : Record "Sales Price Worksheet";
+        ImplementPrices     : Report "Implement Price Change";
+        ItemTemp            : Record Item temporary;
+        SalesDiscGroup      : Record "Sales Line Discount";
+    begin
+        DiscontGroupFilters.SetRange(Type,DiscontGroupFilters.Type::"Item Disc. Group");
+        DiscontGroupFilters.SetRange(Code,itemDiscGroup);
+        CalcGroupPricesFromGroupDiscounts(DiscontGroupFilters,SalesPriceWorksheet);
+        if FindItemsInItemDiscGroup(ItemTemp,itemDiscGroup) then begin
+            if ItemTemp.FindFirst then repeat
+                SalesPriceWorksheet.SetRange("Item No.",ItemTemp."No.");
+                Clear(ImplementPrices);
+                ImplementPrices.SetTableView(SalesPriceWorksheet);
+                ImplementPrices.InitializeRequest(true);
+                ImplementPrices.UseRequestPage(false);
+                ImplementPrices.Run();
+            until ItemTemp.next = 0;    
+        end;
+    end;
     procedure CalcGroupPricesFromGroupDiscounts(var DiscontGroupFilters : Record "Sales Line Discount"; SalesPriceWorksheet : Record "Sales Price Worksheet");
     var
         SalesDiscountGroup : Record "Sales Line Discount";
-        //SalesPriceWorksheet : Record "Sales Price Worksheet";
         ItemListPrice : Record "Sales Price";
         ItemsExistInGroup : Boolean;
         ItemTemp : Record Item temporary;
+        CurrencyTemp : Record Currency temporary;
+
     begin
         SalesDiscountGroup.CopyFilters(DiscontGroupFilters);
         if SalesDiscountGroup.FindSet then repeat
-            ItemsExistInGroup := FindItemsInItemDiscGroup(ItemTemp,SalesDiscountGroup);
+            ItemsExistInGroup := FindItemsInItemDiscGroup(ItemTemp,SalesDiscountGroup.Code);
+
             if ItemsExistInGroup then begin
                 ItemTemp.FindFirst;
-                repeat
+                repeat    //local Currency
                     if FindListPriceForitem(ItemTemp."No.",'',ItemListPrice) then begin
+                        if SalesDiscountGroup."Starting Date" = 0D then
+                            SalesDiscountGroup."Starting Date" := ItemListPrice."Starting Date";
                         SalesPriceWorksheet.validate("Item No.",ItemTemp."No.");
                         SalesPriceWorksheet.Validate("Currency Code",ItemListPrice."Currency Code");
                         CreateWorksheetLineFromDiscountGroup(SalesDiscountGroup,SalesPriceWorksheet);
@@ -86,6 +108,24 @@ codeunit 50000 "Advanced Price Management"
                         if not SalesPriceWorksheet.Insert(true) then
                             SalesPriceWorksheet.Modify(true);
                     end;
+                until ItemTemp.next = 0;
+                FindPriceCurrencies('',CurrencyTemp);
+                ItemTemp.FindFirst;
+                repeat    //other price currencies
+                    if CurrencyTemp.FindFirst then repeat
+                        if FindListPriceForitem(ItemTemp."No.",CurrencyTemp.Code,ItemListPrice) then begin
+                            if SalesDiscountGroup."Starting Date" = 0D then
+                                SalesDiscountGroup."Starting Date" := ItemListPrice."Starting Date";                            
+                            SalesPriceWorksheet.validate("Item No.",ItemTemp."No.");
+                            SalesPriceWorksheet.Validate("Currency Code",ItemListPrice."Currency Code");
+                            CreateWorksheetLineFromDiscountGroup(SalesDiscountGroup,SalesPriceWorksheet);
+                            if SalesPriceWorksheet."Unit of Measure Code" = '' then
+                                SalesPriceWorksheet."Unit of Measure Code" := ItemTemp."Sales Unit of Measure";
+                            SalesPriceWorksheet."New Unit Price" := ItemListPrice."Unit Price" *((100-SalesDiscountGroup."Line Discount %")/100);
+                            if not SalesPriceWorksheet.Insert(true) then
+                                SalesPriceWorksheet.Modify(true);
+                        end;
+                    until CurrencyTemp.next = 0;
                 until ItemTemp.next = 0;
             end;
         until SalesDiscountGroup.next = 0;
@@ -101,11 +141,11 @@ codeunit 50000 "Advanced Price Management"
         exit(listprice.FindLast);
     end;
 
-    local procedure FindItemsInItemDiscGroup(var ItemTemp : Record Item temporary; SalesDiscGroup : Record "Sales Line Discount") : Boolean;
+    local procedure FindItemsInItemDiscGroup(var ItemTemp : Record Item temporary; ItemDiscGroupCode: Code[20]) : Boolean;
     var
         Item : Record Item;
     begin
-        Item.SetRange("Item Disc. Group",SalesDiscGroup.Code);
+        Item.SetRange("Item Disc. Group",ItemDiscGroupCode);
         if Item.FindSet then begin
             repeat
                 ItemTemp := Item;
@@ -116,7 +156,6 @@ codeunit 50000 "Advanced Price Management"
             clear(ItemTemp);
             exit(false);
         end;
-
     end;
 
     local procedure CreateWorksheetLineFromDiscountGroup(DiscountGroup : Record "Sales Line Discount"; var WorkSheet : Record "Sales Price Worksheet");

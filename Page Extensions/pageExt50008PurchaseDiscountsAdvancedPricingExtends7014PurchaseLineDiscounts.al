@@ -7,10 +7,9 @@ pageextension 50008 "Purchase Disc. Adv. Pricing" extends "Purchase Line Discoun
 
     actions
     {
-        
-        addlast(Sections)
-        {
-            group("Process")
+       addfirst(Processing)
+       {
+            group(Update)
             {
                 action(UpdateDiscunts)
                 {
@@ -24,6 +23,6 @@ pageextension 50008 "Purchase Disc. Adv. Pricing" extends "Purchase Line Discoun
                 }
                  
             }
-        }
+       }
     }
 }

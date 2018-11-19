@@ -2,7 +2,7 @@ pageextension 50031 "Credit Limit" extends 26
 {
     layout
     {
-        addafter("Prices Including VAT")
+        addafter("Pay-to Vendor No.")
         {
             field("Credit Limit Amount";"Credit Limit Amount")
             {

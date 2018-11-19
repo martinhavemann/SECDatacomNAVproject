@@ -70,6 +70,10 @@ codeunit 50000 "Advanced Price Management"
                 PurchaseDiscount."Vendor No." := VendorNo;
                 PurchaseDiscount."Minimum Quantity" := 1;           //Note: should be changed to a var!
                 PurchaseDiscount."Unit of Measure Code" := 'STK';   //Note: should be changed to a var!
+                PurchaseDiscount."Line Discount %" := DiscPct;
+                PurchaseDiscount."Starting Date" := WorkDate;
+                if not PurchaseDiscount.Insert(true) then
+                    PurchaseDiscount.Modify(true);
             until ItemTemp.next = 0;    
         end;        
     end;

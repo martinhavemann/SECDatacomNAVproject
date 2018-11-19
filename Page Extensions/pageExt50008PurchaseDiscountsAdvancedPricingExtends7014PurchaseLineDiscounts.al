@@ -17,8 +17,12 @@ pageextension 50008 "Purchase Disc. Adv. Pricing" extends "Purchase Line Discoun
                 Image = UpdateUnitCost;
                 ApplicationArea = All;
                 trigger OnAction();
+                var
+                    Vendor : record Vendor;
                 begin
-                    Report.RunModal(Report::"Update Purc. Disc. Item Group",true,false);
+                    Vendor.SetFilter("No.",rec.GetFilter("Vendor No."));
+                    Report.RunModal(Report::"Update Purc. Disc. Item Group",true,false,Vendor);
+                    CurrPage.Update;
                 end;
                 }
                  

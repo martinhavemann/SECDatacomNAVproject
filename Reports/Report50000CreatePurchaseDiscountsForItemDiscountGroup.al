@@ -4,19 +4,24 @@ report 50000 "Update Purc. Disc. Item Group"
 
     dataset
     {
-        dataitem(Counter; Integer)
+        dataitem(Vendor; Vendor)
         {
            MaxIteration = 1; 
+           DataItemTableView = sorting("No.");
            trigger OnAfterGetRecord();
            var
                AdvPriceMgt : Codeunit "Advanced Price Management";
            begin
-               //AdvPriceMgt.;
+                if NewDiscpercentage = 0 then
+                    Error('You need to specify the discount percentage');
+                if ItemDiscGroup.Code = '' then
+                    Error('You need to specify the Item Discount Group');
+                AdvPriceMgt.UpdatePurchaseDicountsForItemDiscGroup(ItemDiscGroup.Code,NewDiscpercentage,Vendor."No.");
            end;
 
            trigger OnPostDataItem();
            begin
-               Message('something happened');
+               Message('Discounts updated for vendor %1 and Item Disc. Group %2',Vendor."No.",ItemDiscGroup.Code);
            end;
         }
     }

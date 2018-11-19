@@ -18,7 +18,7 @@ pageextension 50008 "Purchase Disc. Adv. Pricing" extends "Purchase Line Discoun
                 ApplicationArea = All;
                 trigger OnAction();
                 begin
-                    Message('Under Construction')
+                    Report.RunModal(Report::"Update Purc. Disc. Item Group",true,false);
                 end;
                 }
                  

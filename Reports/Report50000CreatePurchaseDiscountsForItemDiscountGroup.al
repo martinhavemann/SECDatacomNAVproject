@@ -9,7 +9,12 @@ report 50000 "Update Purc. Disc. Item Group"
            MaxIteration = 1; 
            trigger OnAfterGetRecord();
            var
-               myInt : Integer;
+               AdvPriceMgt : Codeunit "Advanced Price Management";
+           begin
+               //AdvPriceMgt.;
+           end;
+
+           trigger OnPostDataItem();
            begin
                Message('something happened');
            end;
@@ -26,7 +31,13 @@ report 50000 "Update Purc. Disc. Item Group"
                 {
                     field("item Disc. Group";ItemDiscGroup.Code)
                     {
-
+                        trigger OnLookup(Text : Text) : Boolean;
+                        var
+                            myInt : Integer;
+                        begin
+                            if Page.RunModal(page::"Item Disc. Groups",ItemDiscGroup) <> "Action"::LookupOK then
+                                Clear(ItemDiscGroup);
+                        end;
                     }
                     field("New Disc Percentage";NewDiscpercentage)
                     {

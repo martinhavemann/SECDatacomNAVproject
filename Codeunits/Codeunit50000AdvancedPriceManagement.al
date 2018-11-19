@@ -58,7 +58,22 @@ codeunit 50000 "Advanced Price Management"
         ImplementPrices.Run();                                           
     end;
 
-    procedure CalcPricesForItemDiscGroup(itemDiscGroup : Code[20]);
+    procedure UpdatePurchaseDicountsForItemDiscGroup(itemDiscGroup : Code[20]; DiscPct : Decimal; VendorNo : Code[20]);
+    var
+        ItemTemp : Record Item temporary;
+        PurchaseDiscount : Record "Purchase Line Discount";
+    begin
+        if FindItemsInItemDiscGroup(ItemTemp,itemDiscGroup) then begin
+            if ItemTemp.FindFirst then repeat
+                PurchaseDiscount.Init;
+                PurchaseDiscount."Item No." := ItemTemp."No.";
+                PurchaseDiscount."Vendor No." := VendorNo;
+                PurchaseDiscount."Minimum Quantity" := 1;           //Note: should be changed to a var!
+                PurchaseDiscount."Unit of Measure Code" := 'STK';   //Note: should be changed to a var!
+            until ItemTemp.next = 0;    
+        end;        
+    end;
+    procedure CalcSalesPricesForItemDiscGroup(itemDiscGroup : Code[20]);
     var
         DiscontGroupFilters : Record "Sales Line Discount";
         SalesPriceWorksheet : Record "Sales Price Worksheet";

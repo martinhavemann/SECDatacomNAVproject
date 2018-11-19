@@ -16,7 +16,7 @@ pageextension 50007 "Item Dsc. Group Adv. Pricing" extends "Item Disc. Groups"
                 var
                     AdvpriceMgt : Codeunit "Advanced Price Management";
                 begin
-                    AdvpriceMgt.CalcPricesForItemDiscGroup(Code);
+                    AdvpriceMgt.CalcSalesPricesForItemDiscGroup(Code);
                 End;
 
             }

@@ -62,7 +62,10 @@ codeunit 50000 "Advanced Price Management"
     var
         ItemTemp : Record Item temporary;
         PurchaseDiscount : Record "Purchase Line Discount";
+        Vendor : Record Vendor;
     begin
+        If not Vendor.Get(VendorNo) then
+            exit;
         if FindItemsInItemDiscGroup(ItemTemp,itemDiscGroup) then begin
             if ItemTemp.FindFirst then repeat
                 PurchaseDiscount.Init;
@@ -70,8 +73,31 @@ codeunit 50000 "Advanced Price Management"
                 PurchaseDiscount."Vendor No." := VendorNo;
                 PurchaseDiscount."Minimum Quantity" := 1;           //Note: should be changed to a var!
                 PurchaseDiscount."Unit of Measure Code" := 'STK';   //Note: should be changed to a var!
+                PurchaseDiscount."Starting Date" := WorkDate;
+                PurchaseDiscount."Currency Code" := Vendor."Currency Code";
+                //PurchaseDiscount."Variant Code" := ?              Does not support variants at the moment
+                PurchaseDiscount."Line Discount %" := DiscPct;
+                if not PurchaseDiscount.Insert(true) then
+                    PurchaseDiscount.Modify(true);
             until ItemTemp.next = 0;    
         end;        
+    end;
+
+    procedure CreateUpdatePurchasePrices(PurchaseLineDiscount : Record "Purchase Line Discount"; ListPrice   : Record "Sales Price");
+    var
+        PurchasePrice : Record "Purchase Price";
+    begin
+        if not PurchasePrice.Get(PurchaseLineDiscount."Item No.",PurchaseLineDiscount."Vendor No.",PurchaseLineDiscount."Starting Date",PurchaseLineDiscount."Currency Code",
+                                PurchaseLineDiscount."Variant Code",PurchaseLineDiscount."Unit of Measure Code",PurchaseLineDiscount."Minimum Quantity") then begin
+            PurchasePrice.Init;
+            PurchasePrice.TransferFields(PurchaseLineDiscount);
+            PurchasePrice.Validate("Minimum Quantity",PurchaseLineDiscount."Minimum Quantity");
+            PurchasePrice.Validate("Direct Unit Cost",ListPrice."Unit Price" *((100-PurchaseLineDiscount."Line Discount %")/100));
+            PurchasePrice.Insert(true);
+        end else begin
+            PurchasePrice.Validate("Direct Unit Cost",ListPrice."Unit Price" *((100-PurchaseLineDiscount."Line Discount %")/100));
+            PurchasePrice.Modify(true);
+        end;
     end;
     procedure CalcSalesPricesForItemDiscGroup(itemDiscGroup : Code[20]);
     var
@@ -299,6 +325,30 @@ codeunit 50000 "Advanced Price Management"
         ImplementPrices.UseRequestPage(false);
         ImplementPrices.Run();
         //Report.run(report::"Implement Price Change",false,true,SalesPriceWorksheet);
+    end;
+
+    [EventSubscriber(ObjectType::Table, database::"Purchase Line Discount", 'OnAfterModifyEvent','', true, true)]
+    local procedure PurchaseLineDiscountOnAfterModify(var Rec : Record "Purchase Line Discount"; xRec : Record "Purchase Line Discount")
+    var
+        PurchasePrice : Record "Purchase Price";
+        ListPrice   : Record "Sales Price";
+    begin
+        if Rec."Line Discount %" = xRec."Line Discount %" then
+            exit;
+        if not FindListPriceForitem(Rec."Item No.",Rec."Currency Code",ListPrice) then 
+                exit;
+        CreateUpdatePurchasePrices(Rec,ListPrice);
+    end;
+    
+    [EventSubscriber(ObjectType::Table, database::"Purchase Line Discount", 'OnAfterInsertEvent','', true, true)]
+    local procedure PurchaseLineDiscountOnAfterInsert(var Rec : Record "Purchase Line Discount")
+    var
+        PurchasePrice : Record "Purchase Price";
+        ListPrice   : Record "Sales Price";
+    begin
+        if not FindListPriceForitem(Rec."Item No.",Rec."Currency Code",ListPrice) then 
+                exit;
+        CreateUpdatePurchasePrices(Rec,ListPrice);
     end;
 
 }

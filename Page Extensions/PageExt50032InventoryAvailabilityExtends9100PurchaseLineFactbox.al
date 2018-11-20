@@ -13,7 +13,7 @@ pageextension 50032 "Inventory Availability" extends "Purchase Line FactBox"
 
     actions
     {
-        // Add changes to page actions here
+        
     }
     
     var

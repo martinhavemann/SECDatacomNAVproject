@@ -13,7 +13,14 @@ pageextension 50033 "Item Availability" extends 30
             {
                 Image = Start;
                 Promoted = true;
-                RunObject = report 50000;
+                Caption = 'Item Availability';
+                trigger OnAction();
+                var
+                AvailableInv : Query "Available Inventory";
+                begin
+                    AvailableInv.Open;
+                    AvailableInv.Read;
+                end;
             }
         }
     }

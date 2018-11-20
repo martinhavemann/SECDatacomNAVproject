@@ -1,12 +1,13 @@
-query 50000
+query 50000 "Available Inventory"
 {
-    
+    QueryType = API;
     elements
     {
         dataitem(DataItemName; Item)
         {
             column(Inventory; Inventory)
             {
+                Method = Sum;
             }
 
         }
@@ -17,5 +18,6 @@ query 50000
 
     trigger OnBeforeOpen();
     begin
+        
     end;
 }

@@ -19,7 +19,7 @@ pageextension 50033 "Item Availability" extends 30
                 AvailableInv : Query "Available Inventory";
                 begin
                     AvailableInv.Open;
-                    AvailableInv.Read;
+                    AvailableInv.TopNumberOfRows;
                 end;
             }
         }

@@ -25,6 +25,6 @@ pageextension 50032 "Inventory Availability" extends "Purchase Line FactBox"
         Item : Record Item;
     begin
         Item.SetRange("No.","No.");
-        CalcAvailInv.FindAvailableInventory(Item);
+        CurrentAvailability := FORMAT(CalcAvailInv.FindAvailableInventory(Item));
     end;
 }

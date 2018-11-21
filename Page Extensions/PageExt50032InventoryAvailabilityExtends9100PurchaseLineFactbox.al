@@ -18,13 +18,13 @@ pageextension 50032 "Inventory Availability" extends "Purchase Line FactBox"
     
     var
         CurrentAvailability : Text;
+        CallWebservice : Codeunit 50002;
 
-    trigger OnAfterGetRecord();
+    trigger OnAfterGetCurrRecord();
     var
-        CalcAvailInv : Codeunit "Calculate Available Inventory";
+        CalcAvailInv : Codeunit 5790;
         Item : Record Item;
     begin
-        Item.SetRange("No.","No.");
-        CurrentAvailability := FORMAT(CalcAvailInv.FindAvailableInventory(Item));
+        CurrentAvailability := StrSubstNo('%1',CallWebservice.CallWebserviceInventory(Rec));
     end;
 }
